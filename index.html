@@ -1,12 +1,9 @@
 <!DOCTYPE html>
-<html lang="es" class="light">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Convertidor de Imágenes Pro</title>
-    
-    <!-- Favicon -->
-    <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/1373/1373266.png" type="image/png">
+    <title>PostHelperAI - Image Standardizer</title>
     
     <!-- Fuentes e Íconos -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -16,144 +13,116 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
-            darkMode: 'class',
-            theme: { extend: { fontFamily: { sans: ['Inter', 'sans-serif'] } } }
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        dark: {
+                            900: '#11131c', // Main bg original
+                            800: '#1a1d2a', // Card bg
+                            700: '#272c3f', // Hover states
+                        },
+                        brand: {
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                        }
+                    }
+                }
+            }
         }
     </script>
+    <style>
+        body { background-color: #11131c; }
+    </style>
 </head>
-<body class="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200 transition-colors duration-300 min-h-screen flex flex-col items-center justify-center py-10 px-4">
+<body class="text-gray-200 min-h-screen flex flex-col items-center justify-center py-10 px-4 font-sans">
     
-    <div class="w-full max-w-2xl bg-white dark:bg-gray-800 rounded-xl shadow-xl p-8">
+    <div class="w-full max-w-xl bg-dark-800 rounded-2xl shadow-2xl p-8 border border-dark-700">
         
-        <!-- Encabezado y Botón de Modo Oscuro -->
-        <div class="flex justify-between items-center mb-8 border-b dark:border-gray-700 pb-4">
-            <h1 class="text-2xl font-bold"><i class="fa-solid fa-image text-blue-500 mr-2"></i> Convertidor Pro</h1>
-            <button id="themeToggle" class="p-3 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition">
-                <i class="fa-solid fa-moon text-xl" id="themeIcon"></i>
-            </button>
+        <!-- Encabezado Original -->
+        <div class="text-center mb-8">
+            <h1 class="text-3xl font-bold text-white mb-2">PostHelperAI</h1>
+            <p class="text-gray-400 text-sm tracking-wide uppercase">Image Standardizer</p>
         </div>
 
-        <!-- Zona de Arrastrar y Soltar (Drag & Drop) -->
-        <div id="dropZone" class="border-4 border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-12 text-center hover:border-blue-500 dark:hover:border-blue-400 transition-colors cursor-pointer mb-6">
-            <i class="fa-solid fa-cloud-arrow-up text-5xl text-gray-400 mb-4"></i>
-            <p class="text-lg font-medium">Arrastra tu imagen aquí</p>
-            <p class="text-sm text-gray-500 mt-1">o haz clic para buscar en tus archivos</p>
-            <input type="file" id="fileInput" class="hidden" accept="image/*">
+        <!-- Botón de Subida Simple (Formato Anterior) -->
+        <div class="mb-6">
+            <label for="fileInput" class="flex flex-col items-center justify-center w-full h-32 border-2 border-dark-700 border-dashed rounded-xl cursor-pointer hover:bg-dark-700 hover:border-brand-500 transition-all">
+                <div class="flex flex-col items-center justify-center pt-5 pb-6">
+                    <i class="fa-solid fa-image text-3xl text-gray-400 mb-3"></i>
+                    <p class="text-sm text-gray-300 font-semibold">Seleccionar imagen</p>
+                </div>
+                <input type="file" id="fileInput" class="hidden" accept="image/*">
+            </label>
         </div>
 
-        <!-- Vista Previa de la Imagen -->
-        <div id="previewContainer" class="hidden flex flex-col items-center mb-8 bg-gray-50 dark:bg-gray-900 p-4 rounded-lg">
-            <p class="text-sm text-gray-500 mb-3 font-semibold uppercase tracking-wider">Vista previa</p>
-            <img id="previewImg" class="max-h-64 object-contain rounded shadow-sm" src="" alt="Vista previa">
+        <!-- Vista Previa (Oculta por defecto) -->
+        <div id="previewContainer" class="hidden flex flex-col items-center mb-6 bg-dark-900 p-4 rounded-xl border border-dark-700">
+            <img id="previewImg" class="max-h-56 object-contain rounded" src="" alt="Vista previa">
         </div>
 
-        <!-- Controles: Formato y Calidad (Slider) -->
-        <div id="controlsContainer" class="hidden grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        <!-- Opciones Rápidas -->
+        <div id="controlsContainer" class="hidden grid grid-cols-2 gap-4 mb-6">
             <div>
-                <label class="block text-sm font-semibold mb-2">Formato de salida</label>
-                <select id="formatSelect" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg p-3 bg-white dark:bg-gray-700 outline-none focus:border-blue-500 transition">
-                    <option value="image/jpeg">JPG / JPEG</option>
+                <label class="block text-xs text-gray-400 uppercase tracking-wide mb-2">Formato</label>
+                <select id="formatSelect" class="w-full bg-dark-900 border border-dark-700 text-gray-200 text-sm rounded-lg focus:ring-brand-500 focus:border-brand-500 block p-2.5 outline-none transition-colors">
+                    <option value="image/jpeg">JPEG</option>
                     <option value="image/png">PNG</option>
                     <option value="image/webp">WebP</option>
                 </select>
             </div>
             <div>
-                <label class="block text-sm font-semibold mb-2">Calidad: <span id="qualityValue" class="text-blue-500">80</span>%</label>
-                <input type="range" id="qualitySlider" min="10" max="100" value="80" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700 mt-3">
+                <label class="block text-xs text-gray-400 uppercase tracking-wide mb-2">Calidad</label>
+                <select id="qualitySelect" class="w-full bg-dark-900 border border-dark-700 text-gray-200 text-sm rounded-lg focus:ring-brand-500 focus:border-brand-500 block p-2.5 outline-none transition-colors">
+                    <option value="1.0">Máxima (100%)</option>
+                    <option value="0.8" selected>Alta (80%)</option>
+                    <option value="0.6">Media (60%)</option>
+                </select>
             </div>
         </div>
 
         <!-- Botón de Conversión -->
-        <button id="convertBtn" class="hidden w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-4 rounded-lg transition transform hover:-translate-y-1 shadow-lg">
-            <i class="fa-solid fa-download mr-2"></i> Convertir y Descargar
+        <button id="convertBtn" class="hidden w-full bg-brand-600 hover:bg-brand-500 text-white font-semibold py-3 px-4 rounded-xl transition-colors duration-200 flex justify-center items-center gap-2">
+            <i class="fa-solid fa-download"></i> Descargar Imagen
         </button>
     </div>
 
     <script>
-        // Referencias a los elementos del documento
-        const themeToggle = document.getElementById('themeToggle');
-        const themeIcon = document.getElementById('themeIcon');
-        const htmlClass = document.documentElement.classList;
-        
-        const dropZone = document.getElementById('dropZone');
         const fileInput = document.getElementById('fileInput');
         const previewContainer = document.getElementById('previewContainer');
         const previewImg = document.getElementById('previewImg');
         const controlsContainer = document.getElementById('controlsContainer');
         const formatSelect = document.getElementById('formatSelect');
-        const qualitySlider = document.getElementById('qualitySlider');
-        const qualityValue = document.getElementById('qualityValue');
+        const qualitySelect = document.getElementById('qualitySelect');
         const convertBtn = document.getElementById('convertBtn');
-
         let currentFile = null;
 
-        // Lógica del Modo Oscuro
-        themeToggle.addEventListener('click', () => {
-            if (htmlClass.contains('dark')) {
-                htmlClass.remove('dark');
-                themeIcon.classList.replace('fa-sun', 'fa-moon');
-            } else {
-                htmlClass.add('dark');
-                themeIcon.classList.replace('fa-moon', 'fa-sun');
-            }
-        });
-
-        // Actualizar el número del slider de calidad en tiempo real
-        qualitySlider.addEventListener('input', (e) => {
-            qualityValue.textContent = e.target.value;
-        });
-
-        // Lógica de Arrastrar y Soltar (Drag & Drop)
-        dropZone.addEventListener('click', () => fileInput.click());
-        
-        dropZone.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            dropZone.classList.add('border-blue-500', 'bg-blue-50', 'dark:bg-gray-700');
-        });
-
-        dropZone.addEventListener('dragleave', () => {
-            dropZone.classList.remove('border-blue-500', 'bg-blue-50', 'dark:bg-gray-700');
-        });
-
-        dropZone.addEventListener('drop', (e) => {
-            e.preventDefault();
-            dropZone.classList.remove('border-blue-500', 'bg-blue-50', 'dark:bg-gray-700');
-            if (e.dataTransfer.files.length) {
-                handleFile(e.dataTransfer.files[0]);
-            }
-        });
-
+        // Mostrar imagen seleccionada
         fileInput.addEventListener('change', (e) => {
             if (e.target.files.length) {
-                handleFile(e.target.files[0]);
+                const file = e.target.files[0];
+                if (!file.type.startsWith('image/')) return alert('Selecciona una imagen válida.');
+                
+                currentFile = file;
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    previewImg.src = event.target.result;
+                    previewContainer.classList.remove('hidden');
+                    controlsContainer.classList.remove('hidden');
+                    convertBtn.classList.remove('hidden');
+                };
+                reader.readAsDataURL(file);
             }
         });
 
-        // Función para leer la imagen y mostrar la vista previa
-        function handleFile(file) {
-            if (!file.type.startsWith('image/')) {
-                alert('Por favor selecciona un archivo de imagen válido.');
-                return;
-            }
-            currentFile = file;
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                previewImg.src = e.target.result;
-                previewContainer.classList.remove('hidden');
-                controlsContainer.classList.remove('hidden');
-                convertBtn.classList.remove('hidden');
-            };
-            reader.readAsDataURL(file);
-        }
-
-        // Lógica de Conversión y Descarga
+        // Convertir y descargar
         convertBtn.addEventListener('click', () => {
             if (!currentFile) return;
-
             const img = new Image();
             img.src = previewImg.src;
             img.onload = () => {
-                // Crear un canvas para redibujar la imagen con el nuevo formato
                 const canvas = document.createElement('canvas');
                 canvas.width = img.width;
                 canvas.height = img.height;
@@ -161,18 +130,14 @@
                 ctx.drawImage(img, 0, 0);
 
                 const format = formatSelect.value;
-                const quality = parseInt(qualitySlider.value) / 100;
-                
-                // Convertir el canvas a la nueva imagen
+                const quality = parseFloat(qualitySelect.value);
                 const dataUrl = canvas.toDataURL(format, quality);
                 
-                // Preparar la descarga
                 const extension = format.split('/')[1] === 'jpeg' ? 'jpg' : format.split('/')[1];
                 const originalName = currentFile.name.substring(0, currentFile.name.lastIndexOf('.'));
-                const newFileName = `${originalName}_convertido.${extension}`;
-
+                
                 const link = document.createElement('a');
-                link.download = newFileName;
+                link.download = `${originalName}_standardized.${extension}`;
                 link.href = dataUrl;
                 link.click();
             };
